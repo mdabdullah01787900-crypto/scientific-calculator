@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Scientific Calculator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#111;color:#eee;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:12px}
+.calc{width:min(430px,100%);background:linear-gradient(#171717,#252525);border-radius:20px;padding:14px;box-shadow:0 12px 35px #000;border:2px solid #555}
+.top{display:flex;justify-content:space-between;align-items:center;color:#ddd;font-weight:bold;font-size:12px;padding:4px 8px 8px}
+.brand{font-size:20px;letter-spacing:2px}.sub{font-size:8px;color:#aaa;letter-spacing:1px}
+.display{height:120px;background:#b8d2c3;border:7px solid #151515;border-radius:10px;box-shadow:inset 0 2px 8px #5e6d64;color:#14231d;padding:14px;font-family:monospace;font-size:25px;text-align:right;overflow:hidden}
+.small{font-size:14px;min-height:20px;color:#33443d}
+.keys{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+button{min-height:48px;border:0;border-radius:8px;background:linear-gradient(#eee,#cfcfcf);color:#111;font-size:17px;font-weight:600;box-shadow:0 3px 0 #777;touch-action:manipulation}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 #777}
+.dark{background:linear-gradient(#333,#222);color:#fff;box-shadow:0 3px 0 #111}
+.blue{background:linear-gradient(#2995d6,#0b65a6);color:#fff;box-shadow:0 3px 0 #063d63}
+.black{background:linear-gradient(#111,#050505);color:#fff}
+.shift{color:#d7c56b;font-size:12px}.alpha{color:#d76f9d;font-size:12px}
+.tiny{font-size:12px}.wide{grid-column:span 2}
+@media(max-width:360px){button{min-height:43px;font-size:15px}.display{height:105px}}
+</style>
+</head>
+<body>
+<div class="calc">
+  <div class="top">
+    <div><div class="brand">SCIENTIFIC</div><div class="sub">SCIENTIFIC CALCULATOR</div></div>
+    <div>fx-style</div>
+  </div>
+  <div class="display"><div id="history" class="small"></div><div id="screen">0</div></div>
+
+  <div class="keys">
+    <button class="dark shift" onclick="toggleShift()">SHIFT</button>
+    <button class="dark alpha" onclick="toggleAlpha()">ALPHA</button>
+    <button class="dark tiny" onclick="menu()">MENU<br>SETUP</button>
+    <button class="dark" onclick="power()">ON</button>
+    <button class="dark" onclick="clearAll()">AC</button>
+
+    <button class="dark" onclick="insert('(')">(</button>
+    <button class="dark" onclick="insert(')')">)</button>
+    <button class="dark" onclick="del()">DEL</button>
+    <button class="dark" onclick="ans()">Ans</button>
+    <button class="blue" onclick="clearAll()">AC</button>
+
+    <button class="dark" onclick="func('sin')">sin</button>
+    <button class="dark" onclick="func('cos')">cos</button>
+    <button class="dark" onclick="func('tan')">tan</button>
+    <button class="dark" onclick="func('log')">log</button>
+    <button class="dark" onclick="func('ln')">ln</button>
+
+    <button class="dark" onclick="func('sqrt')">√</button>
+    <button class="dark" onclick="func('square')">x²</button>
+    <button class="dark" onclick="func('cube')">x³</button>
+    <button class="dark" onclick="insert('^')">xʸ</button>
+    <button class="dark" onclick="insert('π')">π</button>
+
+    <button onclick="insert('7')">7</button>
+    <button onclick="insert('8')">8</button>
+    <button onclick="insert('9')">9</button>
+    <button class="blue" onclick="del()">DEL</button>
+    <button class="blue" onclick="clearAll()">AC</button>
+
+    <button onclick="insert('4')">4</button>
+    <button onclick="insert('5')">5</button>
+    <button onclick="insert('6')">6</button>
+    <button onclick="insert('×')">×</button>
+    <button onclick="insert('÷')">÷</button>
+
+    <button onclick="insert('1')">1</button>
+    <button onclick="insert('2')">2</button>
+    <button onclick="insert('3')">3</button>
+    <button onclick="insert('+')">+</button>
+    <button onclick="insert('-')">−</button>
+
+    <button onclick="insert('0')">0</button>
+    <button onclick="insert('.')">.</button>
+    <button onclick="percent()">%</button>
+    <button onclick="insert('E')">×10ˣ</button>
+    <button class="blue" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+let expr='',lastAnswer=0,shift=false,alpha=false,on=true;
+const screen=document.getElementById('screen'), history=document.getElementById('history');
+function render(){screen.textContent=expr||'0'}
+function insert(v){if(!on)return;if(v==='π')expr+='pi';else expr+=v;render()}
+function clearAll(){expr='';history.textContent='';render()}
+function del(){expr=expr.slice(0,-1);render()}
+function toggleShift(){shift=!shift}
+function toggleAlpha(){alpha=!alpha}
+function power(){on=!on;document.querySelector('.display').style.opacity=on?'1':'.25'}
+function ans(){expr+=String(lastAnswer);render()}
+function percent(){expr+='%' ; render()}
+function menu(){history.textContent='MENU / SETUP'}
+function func(f){
+  if(!expr)expr='0';
+  try{
+    let x=evalExpr(expr),r;
+    if(f==='sin')r=Math.sin(x*Math.PI/180);
+    if(f==='cos')r=Math.cos(x*Math.PI/180);
+    if(f==='tan')r=Math.tan(x*Math.PI/180);
+    if(f==='log')r=Math.log10(x);
+    if(f==='ln')r=Math.log(x);
+    if(f==='sqrt')r=Math.sqrt(x);
+    if(f==='square')r=x*x;
+    if(f==='cube')r=x*x*x;
+    history.textContent=expr+' →';
+    expr=format(r);lastAnswer=r;render();
+  }catch(e){screen.textContent='Math ERROR'}
+}
+function evalExpr(s){
+  s=s.replace(/π/g,'pi').replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+  s=s.replace(/pi/g,'Math.PI').replace(/\^/g,'**').replace(/(\d+(?:\.\d+)?)%/g,'($1/100)');
+  if(!/^[0-9+\-*/().\sA-Za-z]+$/.test(s))throw Error();
+  return Function('"use strict";return ('+s+')')();
+}
+function format(n){return Number.isFinite(n)?String(Number(n.toPrecision(12))):'Math ERROR'}
+function calculate(){
+  if(!expr)return;
+  try{let r=evalExpr(expr);history.textContent=expr+' =';lastAnswer=r;expr=format(r);render()}
+  catch(e){screen.textContent='Math ERROR'}
+}
+render();
+</script>
+</body>
+</html>
