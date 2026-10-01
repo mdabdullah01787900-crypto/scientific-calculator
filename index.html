@@ -1,158 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scientific Calculator</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+margin:0;
+background:#111;
+font-family:Arial;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:12px;
+}
+
+.calc{
+width:100%;
+max-width:430px;
+background:#222;
+padding:15px;
+border-radius:20px;
+}
+
+.display{
+height:120px;
+background:#b8d2c3;
+border:7px solid #111;
+border-radius:10px;
+color:#14231d;
+padding:12px;
+font-family:monospace;
+font-size:25px;
+text-align:right;
+overflow:hidden;
+}
+
+.history{
+font-size:14px;
+height:25px;
+}
+
+.keys{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:7px;
+margin-top:12px;
+}
+
+button{
+height:50px;
+border:0;
+border-radius:8px;
+font-size:17px;
+font-weight:bold;
+background:linear-gradient(#eee,#ccc);
+box-shadow:0 3px #777;
+}
+
+button:active{
+transform:translateY(2px);
+}
+
+.dark{
+background:#333;
+color:white;
+box-shadow:0 3px #111;
+}
+
+.blue{
+background:#0874bd;
+color:white;
+box-shadow:0 3px #06466f;
+}
+
+.title{
+color:white;
+font-size:20px;
+font-weight:bold;
+margin-bottom:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="calc">
+
+<div class="title">SCIENTIFIC CALCULATOR</div>
+
+<div class="display">
+<div id="history" class="history"></div>
+<div id="screen">0</div>
+</div>
+
+<div class="keys">
+
+<button class="dark">SHIFT</button>
+<button class="dark">ALPHA</button>
+<button class="dark">MENU</button>
+<button class="dark" onclick="power()">ON</button>
+<button class="blue" onclick="clearAll()">AC</button>
+
+<button class="dark" onclick="insert('(')">(</button>
+<button class="dark" onclick="insert(')')">)</button>
+<button class="dark" onclick="del()">DEL</button>
+<button class="dark" onclick="ans()">Ans</button>
+<button class="dark" onclick="clearAll()">AC</button>
+
+<button class="dark" onclick="scientific('sin')">sin</button>
+<button class="dark" onclick="scientific('cos')">cos</button>
+<button class="dark" onclick="scientific('tan')">tan</button>
+<button class="dark" onclick="scientific('log')">log</button>
+<button class="dark" onclick="scientific('ln')">ln</button>
+
+<button class="dark" onclick="scientific('sqrt')">√</button>
+<button class="dark" onclick="scientific('square')">x²</button>
+<button class="dark" onclick="scientific('cube')">x³</button>
+<button class="dark" onclick="insert('^')">xʸ</button>
+<button class="dark" onclick="insert('pi')">π</button>
+
+<button onclick="insert('7')">7</button>
+<button onclick="insert('8')">8</button>
+<button onclick="insert('9')">9</button>
+<button class="blue" onclick="del()">DEL</button>
+<button class="blue" onclick="clearAll()">AC</button>
+
+<button onclick="insert('4')">4</button>
+<button onclick="insert('5')">5</button>
+<button onclick="insert('6')">6</button>
+<button onclick="insert('*')">×</button>
+<button onclick="insert('/')">÷</button>
+
+<button onclick="insert('1')">1</button>
+<button onclick="insert('2')">2</button>
+<button onclick="insert('3')">3</button>
+<button onclick="insert('+')">+</button>
+<button onclick="insert('-')">−</button>
+
+<button onclick="insert('0')">0</button>
+<button onclick="insert('.')">.</button>
+<button onclick="percent()">%</button>
+<button onclick="insert('**')">xʸ</button>
+<button class="blue" onclick="calculate()">=</button>
+
+</div>
+</div>
+
 <script>
-let expr = "";
-let lastAnswer = 0;
-let on = true;
 
-const screen = document.getElementById("screen");
-const history = document.getElementById("history");
+let expr="";
+let lastAnswer=0;
+let powered=true;
 
-function render() {
-  screen.textContent = expr || "0";
+const screen=document.getElementById("screen");
+const history=document.getElementById("history");
+
+function render(){
+screen.textContent=expr || "0";
 }
 
-function insert(v) {
-  if (!on) return;
-  expr += v;
-  render();
+function insert(value){
+if(!powered)return;
+expr+=value;
+render();
 }
 
-function clearAll() {
-  expr = "";
-  history.textContent = "";
-  render();
+function clearAll(){
+expr="";
+history.textContent="";
+render();
 }
 
-function del() {
-  expr = expr.slice(0, -1);
-  render();
+function del(){
+expr=expr.slice(0,-1);
+render();
 }
 
-function toggleShift() {}
-
-function toggleAlpha() {}
-
-function power() {
-  on = !on;
-  document.querySelector(".display").style.opacity =
-    on ? "1" : "0.25";
+function ans(){
+expr+=String(lastAnswer);
+render();
 }
 
-function ans() {
-  expr += String(lastAnswer);
-  render();
+function percent(){
+try{
+expr=String(eval(expr)/100);
+render();
+}catch{
+screen.textContent="Math ERROR";
+}
 }
 
-function percent() {
-  expr += "%";
-  render();
+function power(){
+powered=!powered;
+screen.textContent=powered ? "0" : "";
 }
 
-function menu() {
-  history.textContent = "MENU / SETUP";
+function calculate(){
+
+try{
+
+let result=eval(expr);
+
+if(!Number.isFinite(result))
+throw Error();
+
+history.textContent=expr+" =";
+lastAnswer=result;
+
+expr=format(result);
+render();
+
+}catch{
+screen.textContent="Math ERROR";
 }
 
-/* Scientific functions */
-function func(f) {
-
-  if (!on) return;
-
-  // If no number is entered, start the function
-  if (expr === "") {
-    expr = f + "(";
-    render();
-    return;
-  }
-
-  // If a number is already entered, calculate it
-  try {
-    let x = evalExpr(expr);
-    let r;
-
-    if (f === "sin")
-      r = Math.sin(x * Math.PI / 180);
-
-    else if (f === "cos")
-      r = Math.cos(x * Math.PI / 180);
-
-    else if (f === "tan")
-      r = Math.tan(x * Math.PI / 180);
-
-    else if (f === "log")
-      r = Math.log10(x);
-
-    else if (f === "ln")
-      r = Math.log(x);
-
-    else if (f === "sqrt")
-      r = Math.sqrt(x);
-
-    else if (f === "square")
-      r = x * x;
-
-    else if (f === "cube")
-      r = x * x * x;
-
-    history.textContent = expr + " =";
-    lastAnswer = r;
-    expr = format(r);
-    render();
-
-  } catch (e) {
-    screen.textContent = "Math ERROR";
-  }
 }
 
-function evalExpr(s) {
+function scientific(type){
 
-  s = s.replace(/×/g, "*")
-       .replace(/÷/g, "/")
-       .replace(/−/g, "-")
-       .replace(/π/g, "Math.PI")
-       .replace(/\^/g, "**")
-       .replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
+try{
 
-  // Scientific functions
-  s = s.replace(/sin\(/g, "Math.sin(Math.PI/180*(");
-  s = s.replace(/cos\(/g, "Math.cos(Math.PI/180*(");
-  s = s.replace(/tan\(/g, "Math.tan(Math.PI/180*(");
-  s = s.replace(/log\(/g, "Math.log10(");
-  s = s.replace(/ln\(/g, "Math.log(");
-  s = s.replace(/sqrt\(/g, "Math.sqrt(");
+let x=Number(eval(expr));
 
-  return Function(
-    '"use strict"; return (' + s + ')'
-  )();
+if(!Number.isFinite(x))
+throw Error();
+
+let result;
+
+if(type==="sin"){
+result=Math.sin(x*Math.PI/180);
 }
 
-function format(n) {
-
-  if (!Number.isFinite(n))
-    return "Math ERROR";
-
-  return String(Number(n.toPrecision(12)));
+if(type==="cos"){
+result=Math.cos(x*Math.PI/180);
 }
 
-function calculate() {
+if(type==="tan"){
+result=Math.tan(x*Math.PI/180);
+}
 
-  if (!expr) return;
+if(type==="log"){
+result=Math.log10(x);
+}
 
-  try {
+if(type==="ln"){
+result=Math.log(x);
+}
 
-    // Complete scientific function expression
-    let r = evalExpr(expr);
+if(type==="sqrt"){
+result=Math.sqrt(x);
+}
 
-    history.textContent = expr + " =";
-    lastAnswer = r;
-    expr = format(r);
+if(type==="square"){
+result=x*x;
+}
 
-    render();
+if(type==="cube"){
+result=x*x*x;
+}
 
-  } catch (e) {
+if(!Number.isFinite(result))
+throw Error();
 
-    screen.textContent = "Math ERROR";
+history.textContent=type+"("+x+") =";
 
-  }
+lastAnswer=result;
+expr=format(result);
+
+render();
+
+}catch{
+
+screen.textContent="Math ERROR";
+
+}
+
+}
+
+function format(number){
+
+return Number(number.toPrecision(12)).toString();
+
 }
 
 render();
+
 </script>
+
+</body>
+</html>
