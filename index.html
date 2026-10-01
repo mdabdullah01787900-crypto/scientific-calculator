@@ -1,0 +1,158 @@
+<script>
+let expr = "";
+let lastAnswer = 0;
+let on = true;
+
+const screen = document.getElementById("screen");
+const history = document.getElementById("history");
+
+function render() {
+  screen.textContent = expr || "0";
+}
+
+function insert(v) {
+  if (!on) return;
+  expr += v;
+  render();
+}
+
+function clearAll() {
+  expr = "";
+  history.textContent = "";
+  render();
+}
+
+function del() {
+  expr = expr.slice(0, -1);
+  render();
+}
+
+function toggleShift() {}
+
+function toggleAlpha() {}
+
+function power() {
+  on = !on;
+  document.querySelector(".display").style.opacity =
+    on ? "1" : "0.25";
+}
+
+function ans() {
+  expr += String(lastAnswer);
+  render();
+}
+
+function percent() {
+  expr += "%";
+  render();
+}
+
+function menu() {
+  history.textContent = "MENU / SETUP";
+}
+
+/* Scientific functions */
+function func(f) {
+
+  if (!on) return;
+
+  // If no number is entered, start the function
+  if (expr === "") {
+    expr = f + "(";
+    render();
+    return;
+  }
+
+  // If a number is already entered, calculate it
+  try {
+    let x = evalExpr(expr);
+    let r;
+
+    if (f === "sin")
+      r = Math.sin(x * Math.PI / 180);
+
+    else if (f === "cos")
+      r = Math.cos(x * Math.PI / 180);
+
+    else if (f === "tan")
+      r = Math.tan(x * Math.PI / 180);
+
+    else if (f === "log")
+      r = Math.log10(x);
+
+    else if (f === "ln")
+      r = Math.log(x);
+
+    else if (f === "sqrt")
+      r = Math.sqrt(x);
+
+    else if (f === "square")
+      r = x * x;
+
+    else if (f === "cube")
+      r = x * x * x;
+
+    history.textContent = expr + " =";
+    lastAnswer = r;
+    expr = format(r);
+    render();
+
+  } catch (e) {
+    screen.textContent = "Math ERROR";
+  }
+}
+
+function evalExpr(s) {
+
+  s = s.replace(/×/g, "*")
+       .replace(/÷/g, "/")
+       .replace(/−/g, "-")
+       .replace(/π/g, "Math.PI")
+       .replace(/\^/g, "**")
+       .replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
+
+  // Scientific functions
+  s = s.replace(/sin\(/g, "Math.sin(Math.PI/180*(");
+  s = s.replace(/cos\(/g, "Math.cos(Math.PI/180*(");
+  s = s.replace(/tan\(/g, "Math.tan(Math.PI/180*(");
+  s = s.replace(/log\(/g, "Math.log10(");
+  s = s.replace(/ln\(/g, "Math.log(");
+  s = s.replace(/sqrt\(/g, "Math.sqrt(");
+
+  return Function(
+    '"use strict"; return (' + s + ')'
+  )();
+}
+
+function format(n) {
+
+  if (!Number.isFinite(n))
+    return "Math ERROR";
+
+  return String(Number(n.toPrecision(12)));
+}
+
+function calculate() {
+
+  if (!expr) return;
+
+  try {
+
+    // Complete scientific function expression
+    let r = evalExpr(expr);
+
+    history.textContent = expr + " =";
+    lastAnswer = r;
+    expr = format(r);
+
+    render();
+
+  } catch (e) {
+
+    screen.textContent = "Math ERROR";
+
+  }
+}
+
+render();
+</script>
